@@ -1,0 +1,133 @@
+{
+  "name": "Weather Events Assistant",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 0],
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "cityName": "CIDADE,PAIS",
+        "language": "pt-BR"
+      },
+      "type": "n8n-nodes-base.openWeatherMap",
+      "typeVersion": 1,
+      "position": [192, 0],
+      "name": "OpenWeatherMap",
+      "credentials": {
+        "openWeatherMapApi": {
+          "id": "{{OPENWEATHER_API_ID}}",
+          "name": "OpenWeatherMap account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Você é a Lua, assistente da empresa Lua Marketing, responsável por fornecer relatórios do clima.\n\nVocê deve informar se, com base nos dados de clima atual de CIDADE-PAIS, é viável fazer eventos no dia de hoje a céu aberto.\n\nA temperatura é em graus Celsius e os ventos são em m/s.\n\nTemperatura: {{ $json.main.temp }}\nSensação térmica: {{ $json.main.feels_like }}\nUmidade: {{ $json.main.humidity }}\nVelocidade do vento: {{ $json.wind.speed }}\nInformações atuais: {{ $json.weather[0].main }}, {{ $json.weather[0].description }}\n\nGere o relatório de forma resumida. No máximo, 1 parágrafo com 40 palavras. Seja breve e formal. Retorne apenas o relatório e nada mais. Sem nenhum comentário adicional.",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [400, 0],
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [336, 208],
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "{{GROQ_API_ID}}",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "from": "={{$env.FROM_TWILIO_NUMBER}}",
+        "to": "={{$env.USER_NUMBER}}",
+        "toWhatsapp": true,
+        "message": "={{ $json.text }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.twilio",
+      "typeVersion": 1,
+      "position": [752, 0],
+      "name": "Send WhatsApp Message",
+      "credentials": {
+        "twilioApi": {
+          "id": "{{TWILIO_API_ID}}",
+          "name": "Twilio account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "OpenWeatherMap",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenWeatherMap": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Send WhatsApp Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "v1-anon"
+}

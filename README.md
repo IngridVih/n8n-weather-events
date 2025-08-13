@@ -3,10 +3,7 @@
 ## Descrição
 Automação criada no n8n (orquestrador via Docker) que verifica o clima e envia um relatório resumido por WhatsApp, indicando se é viável realizar um evento ao ar livre. O workflow integra APIs externas (OpenWeatherMap e Twilio) e utiliza Groq como agente de IA, com prompt personalizado, para processar os dados climáticos e gerar recomendações precisas.
 
-Tecnologias utilizadas
-n8n (workflow automation)
-
-## Docker
+## Tecnologias utilizadas
 - n8n (workflow automation)
 - Docker
 - Twilio (API WhatsApp)
@@ -34,4 +31,5 @@ Importante: Não commite o arquivo .env pois ele está listado no .gitignore par
 - Uso do Groq como agente de IA com prompt personalizado
 - Configuração e gerenciamento de variáveis de ambiente de forma segura
 - Conceitos de segurança evitando expor dados sensíveis no repositório
+
 
